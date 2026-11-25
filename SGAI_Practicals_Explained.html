@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SGAI Practicals Explained</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* VOICE: calm study notes, a well-set handout
+   IDEA: a lab manual page - concept text, then the program printed like an editor
+   PICTURE: the coloured code blocks themselves
+   COLOUR and TYPE: white paper, ink, one blue accent; Inter + JetBrains Mono
+   LAYOUT: single 820px column, sticky section links */
+:root{color-scheme:light dark;
+  --bg:light-dark(#ffffff,#16181d);--ink:light-dark(#1f2328,#e6e6e6);--muted:light-dark(#57606a,#a0a6ad);
+  --rule:light-dark(#e4e7eb,#2c3038);--accent:light-dark(#1d5fd6,#6ea8ff);--soft:light-dark(#f4f6f9,#1e2128);
+  --codebg:light-dark(#fafafa,#1f2228);--codeink:light-dark(#24292f,#d7dae0);
+  /* syntax colours (light / dark) */
+  --kw:light-dark(#a626a4,#c678dd);   /* keywords: for if while def import */
+  --fn:light-dark(#d1366b,#e06c75);   /* function / builtin names: print input int */
+  --str:light-dark(#3f8f2c,#98c379);  /* strings */
+  --num:light-dark(#0b8a9a,#56b6c2);  /* numbers */
+  --tag:light-dark(#c0392b,#e06c75);  /* HTML tags */
+  --attr:light-dark(#b76b01,#d19a66); /* HTML attributes, CSS properties */
+  --cls:light-dark(#2a63d4,#61afef);  /* class names, decorators, CSS selectors */
+  --com:light-dark(#8c959f,#7d8590);  /* ALL comments: one plain grey */
+}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+html{scroll-padding-top:72px;scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 Inter,system-ui,sans-serif;overflow-x:clip}
+header{padding:clamp(28px,5vw,56px) max(5vw,16px) 18px;max-width:900px;margin:auto}
+header h1{font-size:clamp(30px,5vw,44px);line-height:1.08;margin:0 0 10px;text-wrap:balance}
+header p{color:var(--muted);margin:0;max-width:62ch}
+nav{display:flex;gap:6px;overflow-x:auto;padding:10px max(5vw,16px);border-block:1px solid var(--rule);background:var(--bg)}
+@media(min-width:900px){nav{position:sticky;top:0;z-index:5;justify-content:center;flex-wrap:wrap}}
+nav a{flex:none;color:var(--ink);text-decoration:none;font-size:14px;padding:6px 10px;border-radius:6px;background:var(--soft)}
+nav a:hover,nav a:focus-visible{background:var(--accent);color:#fff;outline:none}
+main{max-width:900px;margin:auto;padding:8px max(5vw,16px) 80px}
+h2{font-size:28px;line-height:1.15;margin:56px 0 12px;padding-top:20px;border-top:3px solid var(--ink)}
+h3{font-size:18px;margin:28px 0 8px;color:var(--accent)}
+p,li{max-width:72ch}
+ul,ol{padding-left:1.3em}li{margin:4px 0}
+a{color:var(--accent)}
+:not(pre)>code{font:14px 'JetBrains Mono',monospace;background:var(--soft);padding:1px 5px;border-radius:4px;overflow-wrap:anywhere}
+table{border-collapse:collapse;width:100%;margin:12px 0;font-size:15px}
+th,td{border-bottom:1px solid var(--rule);padding:8px 10px;text-align:left;vertical-align:top}
+th{background:var(--soft)}
+.tbl{overflow-x:auto}
+.code{margin:14px 0 18px;border:1px solid var(--rule);border-radius:10px;overflow:hidden;background:var(--codebg)}
+.bar{display:flex;justify-content:space-between;align-items:center;padding:6px 10px 6px 14px;border-bottom:1px solid var(--rule);font-size:13px;color:var(--muted)}
+.copy{font:600 13px Inter,sans-serif;border:1px solid var(--rule);background:var(--bg);color:var(--ink);border-radius:6px;padding:6px 12px;min-height:32px;cursor:pointer}
+.copy:focus-visible{outline:2px solid var(--accent)}
+pre{margin:0;padding:14px 16px;overflow-x:auto;font:14px/1.6 'JetBrains Mono',ui-monospace,monospace;color:var(--codeink)}
+pre code{font:inherit}
+/* --- syntax --- */
+.k,.kn,.kd,.kr,.kc,.ow,.kt{color:var(--kw)}
+.nb,.nf,.bp,.fm{color:var(--fn)}
+.s,.s1,.s2,.sa,.sb,.sc,.sd,.se,.sh,.si,.sr,.ss,.dl{color:var(--str)}
+.m,.mi,.mf,.mh,.mo,.il{color:var(--num)}
+.nt{color:var(--tag)}
+.na,.py{color:var(--attr)}
+.nc,.nd,.nn{color:var(--cls)}
+.c,.c1,.cm,.cs,.ch,.cpf{color:var(--com);font-style:normal}
+.cp{color:var(--tag)}  /* DOCTYPE is code, not a comment */
+@media(max-width:600px){h2{font-size:24px}pre{font-size:13px}table{font-size:13px}}
+</style>
+</head>
+<body>
+<header>
+  <h1>SGAI Practicals: Concepts &amp; Code Explained</h1>
+  <p>Each practical: the concepts first, then one complete program with every line explained in a grey comment.</p>
+</header>
+<nav class="scroll" aria-label="Sections"><a href="#before-you-start-vs-code">Before you start (VS Code)</a><a href="#p1-control-structures">P1</a><a href="#p2-dictionary-list-and-tuple">P2</a><a href="#p3-data-analysis-with-pandas-and-matplotlib">P3</a><a href="#p4-generative-models-and-the-autoencoder">P4</a><a href="#p5-personal-website-with-html-css-and-gen-ai">P5</a><a href="#p6-rule-based-chatbot-with-nlp">P6</a><a href="#p8-web-scraping">P8</a><a href="#p9-javascript-counter-app-and-debugging">P9</a><a href="#p10a-speech-to-text-with-the-google-speech-api">P10a</a><a href="#p10b-tweet-sentiment-analysis-with-vader">P10b</a><a href="#github-study-assignment">GitHub study assignment</a></nav>
+<main>
+
+<p>Every practical follows the same order: the concepts first (proper definition, then a plain-language explanation), then one complete program with every line explained in a comment.</p>
+<h2 id="before-you-start-vs-code">Before you start (VS Code)</h2>
+<ul>
+<li><strong>Open the right folder:</strong> File → Open Folder on the folder that holds the given file (CSV, WAV). Then <code>pd.read_csv("students.csv")</code> finds it. Otherwise you get <code>FileNotFoundError</code>.</li>
+<li><strong>Run:</strong> click ▶ (Run Python File) or type <code>py filename.py</code> (Windows) or <code>python filename.py</code> in the terminal (Ctrl + `).</li>
+<li><strong>Charts:</strong> each <code>plt.show()</code> opens a window. Close it to see the next chart.</li>
+<li><strong>Check a given CSV first:</strong> <code>print(df.columns)</code> tells you the exact column names to use.</li>
+<li><strong>Python basics used everywhere:</strong> <code>input()</code> always returns text (a <em>string</em>), so wrap it in <code>int()</code> or <code>float()</code> to get a number. <code>print()</code> shows output. Indentation (4 spaces) marks which lines belong inside an <code>if</code>, loop or function.</li>
+</ul>
+<h2 id="p1-control-structures">P1 – Control structures</h2>
+<h3>Concepts</h3>
+<ul>
+<li><strong>Control structure:</strong> a statement that decides <em>which</em> lines run and <em>how many times</em>. In plain words: without them a program runs top to bottom once; with them it can choose and repeat.</li>
+<li><strong>if / else:</strong> runs a block only when a condition is <code>True</code>, otherwise the <code>else</code> block. Plain words: "if it's raining, take an umbrella, else don't".</li>
+<li><strong>if / elif / else:</strong> checks several conditions in order; only the <em>first</em> true one runs. Plain words: a ladder – you stop at the first step that fits. That's why the percentage program checks <code>&gt;= 90</code> before <code>&gt;= 75</code>.</li>
+<li><strong>Nested if:</strong> an <code>if</code> inside another <code>if</code>. Plain words: a second question you only ask after the first answer ("divisible by 5? then, divisible by 11 too?").</li>
+<li><strong>for loop:</strong> repeats once for each item of a sequence. <code>range(a, b)</code> gives a, a+1 … b−1 (b is <em>excluded</em>). Plain words: "do this for every number from 1 to 10".</li>
+<li><strong>while loop:</strong> repeats as long as a condition stays true. Plain words: "keep going until…". You must change the variable inside, or it loops forever.</li>
+<li><strong>break:</strong> exits the loop immediately. <strong>continue:</strong> skips to the next round.</li>
+<li><strong>for–else:</strong> the <code>else</code> runs only if the loop finished <em>without</em> <code>break</code>. Plain words: "searched everything and found nothing".</li>
+<li><strong>Operators:</strong> <code>%</code> = remainder (<code>10 % 3</code> = 1), so <code>n % i == 0</code> means "i divides n exactly". <code>==</code> compares, <code>=</code> assigns.</li>
+<li><strong>ord() / chr():</strong> <code>ord('A')</code> = 65 (the character's ASCII code), <code>chr(66)</code> = 'B'.</li>
+</ul>
+<h3>Code</h3>
+<div class="code"><div class="bar"><span>Python</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c1"># ---------- 1. PRIME NUMBER (for loop + if-else, for-else) ----------</span>
+<span class="n">n</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">input</span><span class="p">(</span><span class="s2">"Number: "</span><span class="p">))</span>              <span class="c1"># input() gives text, int() turns it into a number</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>                    <span class="c1"># try every divisor from 2 to n-1 (range excludes n)</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="o">%</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>                       <span class="c1"># % = remainder; 0 means i divides n exactly</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"Not prime"</span><span class="p">)</span>
+        <span class="k">break</span>                            <span class="c1"># found a divisor, stop the loop</span>
+<span class="k">else</span><span class="p">:</span>                                    <span class="c1"># for-else: runs only if the loop never hit break</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"Prime"</span> <span class="k">if</span> <span class="n">n</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="s2">"Not prime"</span><span class="p">)</span>   <span class="c1"># 0 and 1 are not prime</span>
+
+<span class="c1"># ---------- 2. DAYS IN A MONTH (if-elif-else) ----------</span>
+<span class="n">m</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">input</span><span class="p">(</span><span class="s2">"Month: "</span><span class="p">))</span>
+<span class="k">if</span> <span class="n">m</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"28 days (29 in a leap year)"</span><span class="p">)</span>   <span class="c1"># February</span>
+<span class="k">elif</span> <span class="n">m</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">11</span><span class="p">):</span>                 <span class="c1"># April, June, September, November</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"30 days"</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>                                    <span class="c1"># all other months</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"31 days"</span><span class="p">)</span>
+
+<span class="c1"># ---------- 3. MENU CALCULATOR (while loop + if-elif) ----------</span>
+<span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="nb">input</span><span class="p">(</span><span class="s2">"a: "</span><span class="p">)),</span> <span class="nb">float</span><span class="p">(</span><span class="nb">input</span><span class="p">(</span><span class="s2">"b: "</span><span class="p">))</span>   <span class="c1"># float() allows decimals</span>
+<span class="n">c</span> <span class="o">=</span> <span class="mi">0</span>                                    <span class="c1"># start at 0 so the loop runs at least once</span>
+<span class="k">while</span> <span class="n">c</span> <span class="o">!=</span> <span class="mi">5</span><span class="p">:</span>                            <span class="c1"># keep showing the menu until the user picks 5 (Exit)</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">input</span><span class="p">(</span><span class="s2">"1.+ 2.- 3.* 4./ 5.Exit: "</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="n">a</span> <span class="o">+</span> <span class="n">b</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">c</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="n">a</span> <span class="o">-</span> <span class="n">b</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">c</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="n">a</span> <span class="o">*</span> <span class="n">b</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">c</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="n">a</span> <span class="o">/</span> <span class="n">b</span><span class="p">)</span>
+
+<span class="c1"># ---------- 4. REMARKS FROM PERCENTAGE (if-elif-else ladder) ----------</span>
+<span class="n">p</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">input</span><span class="p">(</span><span class="s2">"Percentage: "</span><span class="p">))</span>
+<span class="k">if</span> <span class="n">p</span> <span class="o">&gt;=</span> <span class="mi">90</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="s2">"Excellent"</span><span class="p">)</span>           <span class="c1"># checked top to bottom; the first true one runs</span>
+<span class="k">elif</span> <span class="n">p</span> <span class="o">&gt;=</span> <span class="mi">75</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="s2">"Very Good"</span><span class="p">)</span>         <span class="c1"># so 82 fails &gt;= 90 and stops here</span>
+<span class="k">elif</span> <span class="n">p</span> <span class="o">&gt;=</span> <span class="mi">60</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="s2">"Good"</span><span class="p">)</span>
+<span class="k">elif</span> <span class="n">p</span> <span class="o">&gt;=</span> <span class="mi">40</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="s2">"Average"</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="s2">"Fail"</span><span class="p">)</span>                      <span class="c1"># below 40</span>
+
+<span class="c1"># ---------- 5. PRINT 30 TO 1 (while loop) ----------</span>
+<span class="n">i</span> <span class="o">=</span> <span class="mi">30</span>
+<span class="k">while</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">:</span>                            <span class="c1"># repeat while i is still 1 or more</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+    <span class="n">i</span> <span class="o">-=</span> <span class="mi">1</span>                               <span class="c1"># same as i = i - 1; without it the loop never ends</span>
+
+<span class="c1"># ---------- 6. FIBONACCI UP TO n TERMS (while loop) ----------</span>
+<span class="n">n</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">input</span><span class="p">(</span><span class="s2">"Terms: "</span><span class="p">))</span>
+<span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span>                        <span class="c1"># first two terms, and a counter</span>
+<span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+    <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">b</span><span class="p">,</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span>                      <span class="c1"># next term = sum of previous two; both update at once</span>
+    <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>                               <span class="c1"># one more term printed</span>
+
+<span class="c1"># ---------- 7. ASCII VALUES OF A TO Z ----------</span>
+<span class="n">ch</span> <span class="o">=</span> <span class="s1">'A'</span>
+<span class="k">while</span> <span class="n">ch</span> <span class="o">&lt;=</span> <span class="s1">'Z'</span><span class="p">:</span>                         <span class="c1"># letters compare in alphabetical order</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">ch</span><span class="p">,</span> <span class="s2">":"</span><span class="p">,</span> <span class="nb">ord</span><span class="p">(</span><span class="n">ch</span><span class="p">))</span>              <span class="c1"># ord() gives the character's ASCII code (A = 65)</span>
+    <span class="n">ch</span> <span class="o">=</span> <span class="nb">chr</span><span class="p">(</span><span class="nb">ord</span><span class="p">(</span><span class="n">ch</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>                <span class="c1"># chr() turns code+1 back into the next letter</span>
+
+<span class="c1"># ---------- 8. NUMBER TRIANGLE PATTERN (nested for) ----------</span>
+<span class="n">r</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">input</span><span class="p">(</span><span class="s2">"Rows: "</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">r</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>                <span class="c1"># outer loop = which row</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>            <span class="c1"># inner loop = numbers 1..row number</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">" "</span><span class="p">)</span>                <span class="c1"># end=" " keeps them on the same line</span>
+    <span class="nb">print</span><span class="p">()</span>                              <span class="c1"># move to the next line after each row</span>
+
+<span class="c1"># ---------- 9. TABLES OF 5 TO 10 (nested for) ----------</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">11</span><span class="p">):</span>                   <span class="c1"># 5 to 10 (11 is excluded)</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">11</span><span class="p">):</span>               <span class="c1"># multiply by 1 to 10</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="s2">"x"</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="s2">"="</span><span class="p">,</span> <span class="n">i</span> <span class="o">*</span> <span class="n">j</span><span class="p">)</span>
+
+<span class="c1"># ---------- 10. DIVISIBLE BY 5 AND/OR 11 (nested if) ----------</span>
+<span class="n">n</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">input</span><span class="p">(</span><span class="s2">"Number: "</span><span class="p">))</span>
+<span class="k">if</span> <span class="n">n</span> <span class="o">%</span> <span class="mi">5</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>                           <span class="c1"># outer question: divisible by 5?</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="o">%</span> <span class="mi">11</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="s2">"Divisible by both"</span><span class="p">)</span>   <span class="c1"># inner question: also by 11?</span>
+    <span class="k">else</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="s2">"Only by 5"</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="o">%</span> <span class="mi">11</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="s2">"Only by 11"</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="s2">"Neither"</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="p2-dictionary-list-and-tuple">P2 – Dictionary, List and Tuple</h2>
+<h3>Concepts</h3>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Syntax</th>
+<th>Ordered</th>
+<th>Mutable (changeable)</th>
+<th>Plain-language idea</th>
+<th>Used here for</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>List</td>
+<td><code>[85, 90, 88]</code></td>
+<td>Yes</td>
+<td>Yes</td>
+<td>A shopping list you can add to, edit, cross out</td>
+<td>Marks; all bill entries</td>
+</tr>
+<tr>
+<td>Tuple</td>
+<td><code>("Rahul", [85, 90])</code></td>
+<td>Yes</td>
+<td>No</td>
+<td>A printed receipt – fixed once made</td>
+<td>(name, marks); one bill entry</td>
+</tr>
+<tr>
+<td>Dictionary</td>
+<td><code>{1: ("Rahul", […])}</code></td>
+<td>Yes (Python 3.7+)</td>
+<td>Yes</td>
+<td>A phone book – look up a value by its key</td>
+<td>roll → record; item → stock</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>Mutable vs immutable:</strong> a mutable object can be changed after creation; an immutable one cannot. Plain words: a whiteboard vs a printed page.</li>
+<li><strong>Key–value pair:</strong> in a dictionary every <em>key</em> (unique, immutable, e.g. roll number) maps to a <em>value</em>. Lookup by key is very fast.</li>
+<li><strong>The viva trick:</strong> a tuple can't change, but if it <em>holds</em> a list, that list can still change. So in <code>("Rahul", [85, 90])</code> the name is locked but the marks can be updated.</li>
+<li><strong>Tuple unpacking:</strong> <code>name, q, p = ("rice", 5, 60)</code> puts each item in its own variable. <code>for r, (n, m) in s.items()</code> does this inside a loop.</li>
+<li><strong>Useful methods:</strong> list – <code>append()</code>, <code>remove()</code>, <code>pop()</code>; dict – <code>items()</code> (key + value pairs), <code>keys()</code>, <code>values()</code>, <code>get(key, default)</code>.</li>
+<li><strong>map() and split():</strong> <code>"85 90 88".split()</code> → <code>["85", "90", "88"]</code>; <code>map(int, …)</code> turns each into a number.</li>
+</ul>
+<h3>Code: Student Record Manager</h3>
+<div class="code"><div class="bar"><span>Python</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c1"># Dictionary: key = roll number, value = tuple (name, list_of_marks)</span>
+<span class="c1"># Tuple keeps the name fixed; the list inside it can still be changed</span>
+<span class="n">s</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span><span class="p">:</span> <span class="p">(</span><span class="s2">"Rahul"</span><span class="p">,</span> <span class="p">[</span><span class="mi">85</span><span class="p">,</span> <span class="mi">90</span><span class="p">,</span> <span class="mi">88</span><span class="p">])}</span>
+
+<span class="k">while</span> <span class="kc">True</span><span class="p">:</span>                                          <span class="c1"># menu repeats until the user picks Exit</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s2">"1.Add 2.Avg&gt;80 3.Update 4.Exit: "</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="s2">"1"</span><span class="p">:</span>                                     <span class="c1"># ADD a student</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">input</span><span class="p">(</span><span class="s2">"Roll: "</span><span class="p">))</span>                     <span class="c1"># roll number = the dictionary key</span>
+        <span class="n">s</span><span class="p">[</span><span class="n">r</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="nb">input</span><span class="p">(</span><span class="s2">"Name: "</span><span class="p">),</span>                     <span class="c1"># store a new tuple under that key</span>
+                <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">input</span><span class="p">(</span><span class="s2">"Marks: "</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">())))</span>   <span class="c1"># "85 90 88" -&gt; [85, 90, 88]</span>
+
+    <span class="k">elif</span> <span class="n">c</span> <span class="o">==</span> <span class="s2">"2"</span><span class="p">:</span>                                   <span class="c1"># SHOW students with average above 80</span>
+        <span class="k">for</span> <span class="n">r</span><span class="p">,</span> <span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">m</span><span class="p">)</span> <span class="ow">in</span> <span class="n">s</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>                  <span class="c1"># items() gives (key, value); unpack the tuple into n, m</span>
+            <span class="k">if</span> <span class="nb">sum</span><span class="p">(</span><span class="n">m</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">m</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">80</span><span class="p">:</span>                 <span class="c1"># average = total / number of marks</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">c</span> <span class="o">==</span> <span class="s2">"3"</span><span class="p">:</span>                                   <span class="c1"># UPDATE marks of one student</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">input</span><span class="p">(</span><span class="s2">"Roll: "</span><span class="p">))</span>
+        <span class="n">s</span><span class="p">[</span><span class="n">r</span><span class="p">][</span><span class="mi">1</span><span class="p">][:]</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">input</span><span class="p">(</span><span class="s2">"New marks: "</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">())</span>   <span class="c1"># s[r][1] = the marks list; [:] = replaces its contents in place</span>
+
+    <span class="k">else</span><span class="p">:</span>                                            <span class="c1"># 4 (or anything else) = Exit</span>
+        <span class="k">break</span>
+</code></pre></div>
+<h3>Code: Grocery Billing</h3>
+<div class="code"><div class="bar"><span>Python</span><button type="button" class="copy">Copy</button></div><pre><code><span class="n">stock</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"rice"</span><span class="p">:</span> <span class="mi">50</span><span class="p">,</span> <span class="s2">"milk"</span><span class="p">:</span> <span class="mi">20</span><span class="p">}</span>                     <span class="c1"># dictionary: item -&gt; quantity available</span>
+<span class="n">price</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"rice"</span><span class="p">:</span> <span class="mi">60</span><span class="p">,</span> <span class="s2">"milk"</span><span class="p">:</span> <span class="mi">30</span><span class="p">}</span>                     <span class="c1"># dictionary: item -&gt; price per unit</span>
+<span class="n">bill</span> <span class="o">=</span> <span class="p">[]</span>                                            <span class="c1"># list that will hold one tuple per purchase</span>
+
+<span class="k">while</span> <span class="p">(</span><span class="n">item</span> <span class="o">:=</span> <span class="nb">input</span><span class="p">(</span><span class="s2">"Item (done): "</span><span class="p">))</span> <span class="o">!=</span> <span class="s2">"done"</span><span class="p">:</span>    <span class="c1"># := reads the input and checks it in one line</span>
+    <span class="n">q</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">input</span><span class="p">(</span><span class="s2">"Qty: "</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">q</span> <span class="o">&lt;=</span> <span class="n">stock</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="mi">0</span><span class="p">):</span>                      <span class="c1"># get() returns 0 for unknown items instead of crashing</span>
+        <span class="n">bill</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">item</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">price</span><span class="p">[</span><span class="n">item</span><span class="p">]))</span>          <span class="c1"># tuple = (name, qty, rate), fixed once billed</span>
+        <span class="n">stock</span><span class="p">[</span><span class="n">item</span><span class="p">]</span> <span class="o">-=</span> <span class="n">q</span>                             <span class="c1"># update the stock dictionary</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"Insufficient stock"</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">bill</span><span class="p">)</span>                                          <span class="c1"># all bill entries</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Total ="</span><span class="p">,</span> <span class="nb">sum</span><span class="p">(</span><span class="n">q</span> <span class="o">*</span> <span class="n">p</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">bill</span><span class="p">))</span>     <span class="c1"># qty x rate for every entry, added up (_ ignores the name)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Stock:"</span><span class="p">,</span> <span class="n">stock</span><span class="p">)</span>                               <span class="c1"># remaining stock</span>
+</code></pre></div>
+<h2 id="p3-data-analysis-with-pandas-and-matplotlib">P3 – Data analysis with Pandas and Matplotlib</h2>
+<h3>Concepts</h3>
+<ul>
+<li><strong>Library:</strong> ready-made code you import instead of writing it yourself. <code>import pandas as pd</code> loads Pandas under the short name <code>pd</code>.</li>
+<li><strong>Pandas:</strong> a library for data manipulation and analysis. Plain words: Excel inside Python.</li>
+<li><strong>DataFrame:</strong> a 2-D labelled table of rows and columns. <strong>Series:</strong> a single column of it. <code>d["Maths"]</code> is a Series; <code>d[["Maths", "Science"]]</code> (double brackets) is a smaller DataFrame.</li>
+<li><strong>CSV (Comma-Separated Values):</strong> a plain-text table where each line is a row and commas separate columns. <code>pd.read_csv()</code> loads it into a DataFrame.</li>
+<li><strong>head():</strong> first 5 rows. <strong>describe():</strong> summary statistics per numeric column – count, mean, std (standard deviation, how spread out the values are), min, 25%/50%/75% (quartiles; 50% = median), max.</li>
+<li><strong>axis:</strong> <code>axis=0</code> works <em>down</em> each column (e.g. average of each subject); <code>axis=1</code> works <em>across</em> each row (e.g. average of each student).</li>
+<li><strong>Matplotlib (pyplot):</strong> a library for drawing charts. <code>plt.show()</code> displays the figure.</li>
+<li><strong>Which chart when:</strong><ul>
+<li>Bar chart – compare values across categories (each student's average).</li>
+<li>Line chart – show a trend or compare series across the same x-points (subjects across students).</li>
+<li>Histogram – show the <em>distribution</em> of one variable: how many values fall in each range (bin).</li>
+<li>Pie chart – show each part's share of a whole, as percentages.</li>
+</ul>
+</li>
+</ul>
+<h3>Code</h3>
+<div class="code"><div class="bar"><span>Python</span><button type="button" class="copy">Copy</button></div><pre><code><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span><span class="o">,</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>       <span class="c1"># pd = data tables, plt = charts</span>
+
+<span class="n">d</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">"students.csv"</span><span class="p">)</span>                     <span class="c1"># load the CSV into a DataFrame (a table)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>                                      <span class="c1"># first 5 rows</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">describe</span><span class="p">())</span>                                  <span class="c1"># count, mean, std, min, quartiles, max of each number column</span>
+
+<span class="c1"># new column: average of the 3 subjects for each student (axis=1 = across the row)</span>
+<span class="n">d</span><span class="p">[</span><span class="s2">"Average"</span><span class="p">]</span> <span class="o">=</span> <span class="n">d</span><span class="p">[[</span><span class="s2">"Maths"</span><span class="p">,</span> <span class="s2">"Science"</span><span class="p">,</span> <span class="s2">"English"</span><span class="p">]]</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">d</span><span class="p">[[</span><span class="s2">"Name"</span><span class="p">,</span> <span class="s2">"Average"</span><span class="p">]])</span>                        <span class="c1"># double brackets = pick several columns</span>
+
+<span class="c1"># BAR CHART: compare each student's average</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s2">"Name"</span><span class="p">],</span> <span class="n">d</span><span class="p">[</span><span class="s2">"Average"</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>                                           <span class="c1"># opens the chart; close it to continue</span>
+
+<span class="c1"># LINE CHART: one line per subject across all students</span>
+<span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">"Maths"</span><span class="p">,</span> <span class="s2">"Science"</span><span class="p">,</span> <span class="s2">"English"</span><span class="p">]:</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s2">"Name"</span><span class="p">],</span> <span class="n">d</span><span class="p">[</span><span class="n">s</span><span class="p">],</span> <span class="n">marker</span><span class="o">=</span><span class="s2">"o"</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">s</span><span class="p">)</span>  <span class="c1"># marker = dot on each point, label = name in the legend</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>                                         <span class="c1"># show the key (which colour is which subject)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="c1"># HISTOGRAM: how many students fall in each range of Maths marks</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s2">"Maths"</span><span class="p">],</span> <span class="n">bins</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>                         <span class="c1"># bins = number of ranges</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="c1"># PIE CHART: each student's share of the total of averages</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">pie</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s2">"Average"</span><span class="p">],</span> <span class="n">labels</span><span class="o">=</span><span class="n">d</span><span class="p">[</span><span class="s2">"Name"</span><span class="p">],</span> <span class="n">autopct</span><span class="o">=</span><span class="s2">"</span><span class="si">%1.1f%%</span><span class="s2">"</span><span class="p">)</span>   <span class="c1"># autopct prints the % with 1 decimal</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="n">d</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s2">"students_cleaned.csv"</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>       <span class="c1"># save the table with the new column (index=False skips row numbers)</span>
+</code></pre></div>
+<p>If the given CSV has different column names, change only the names in quotes.</p>
+<h2 id="p4-generative-models-and-the-autoencoder">P4 – Generative models and the Autoencoder</h2>
+<h3>Concepts</h3>
+<ul>
+<li><strong>Generative model:</strong> a model that learns the probability distribution of its training data and can produce <em>new</em> samples from it. Plain words: it studies thousands of examples until it can make convincing new ones.</li>
+<li><strong>Discriminative vs generative:</strong> a discriminative model <em>labels</em> data ("this is a cat"); a generative model <em>creates</em> data (draws a new cat).</li>
+<li><strong>Neural network:</strong> layers of connected units (neurons); each multiplies its inputs by learned <em>weights</em>, adds them and applies an activation function. Training = adjusting the weights to reduce the error.</li>
+<li><strong>Autoencoder:</strong> a neural network trained to copy its input to its output through a narrow middle layer.<ul>
+<li><strong>Encoder</strong> compresses the image: 784 pixels → 32 numbers.</li>
+<li><strong>Latent space / bottleneck:</strong> those 32 numbers – a compressed summary of the image.</li>
+<li><strong>Decoder</strong> rebuilds the 784 pixels from the 32 numbers.</li>
+<li>Plain words: describe a photo in 32 words, then redraw it from only those words. To do this well it must learn what matters.</li>
+</ul>
+</li>
+<li><strong>Unsupervised learning:</strong> no labels needed – the input itself is the target (<code>fit(x, x)</code>).</li>
+<li><strong>MNIST:</strong> 70,000 grayscale 28×28 images of handwritten digits (60,000 train, 10,000 test). 28 × 28 = 784 pixels.</li>
+<li><strong>Normalisation:</strong> dividing pixel values (0–255) by 255 to get 0–1. Plain words: putting everything on the same small scale makes training stable.</li>
+<li><strong>Dense layer:</strong> every neuron connects to every input. <strong>ReLU</strong> activation = max(0, x). <strong>Sigmoid</strong> squashes output into 0–1, which matches pixel values.</li>
+<li><strong>Loss (binary cross-entropy):</strong> measures how different the rebuilt image is from the original. <strong>Optimizer (Adam):</strong> the method that adjusts weights to lower the loss.</li>
+<li><strong>Epoch:</strong> one full pass over the training data. <strong>Batch size:</strong> how many images are processed before each weight update.</li>
+<li><strong>Uses:</strong> denoising, compression, anomaly detection, data augmentation. A <em>variational</em> autoencoder (VAE) is the version built specifically for generating new images.</li>
+<li><strong>Other Gen-AI models (theory part):</strong> GPT = Transformer (text); DALL·E / Stable Diffusion = diffusion models (images); Pix2Pix / CycleGAN = GANs, a generator vs a discriminator (image-to-image); WaveNet / Tacotron (speech); MusicLM (music); Sora (video).</li>
+</ul>
+<h3>Code</h3>
+<div class="code"><div class="bar"><span>Python</span><button type="button" class="copy">Copy</button></div><pre><code><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tensorflow</span><span class="w"> </span><span class="kn">import</span> <span class="n">keras</span>                         <span class="c1"># Keras = easy way to build neural networks</span>
+
+<span class="c1"># Load MNIST: (train images, labels), (test images, labels); labels thrown away with _ (not needed)</span>
+<span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">_</span><span class="p">),</span> <span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="o">=</span> <span class="n">keras</span><span class="o">.</span><span class="n">datasets</span><span class="o">.</span><span class="n">mnist</span><span class="o">.</span><span class="n">load_data</span><span class="p">()</span>   <span class="c1"># downloads once, then uses the saved copy</span>
+
+<span class="c1"># Flatten each 28x28 image into 784 numbers, and scale pixels 0-255 -&gt; 0-1 (normalisation)</span>
+<span class="n">x</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">784</span><span class="p">)</span> <span class="o">/</span> <span class="mi">255</span><span class="p">,</span> <span class="n">t</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">784</span><span class="p">)</span> <span class="o">/</span> <span class="mi">255</span>
+
+<span class="c1"># Build the autoencoder: input 784 -&gt; ENCODER 32 (bottleneck / latent space) -&gt; DECODER 784</span>
+<span class="n">m</span> <span class="o">=</span> <span class="n">keras</span><span class="o">.</span><span class="n">Sequential</span><span class="p">([</span>
+    <span class="n">keras</span><span class="o">.</span><span class="n">Input</span><span class="p">((</span><span class="mi">784</span><span class="p">,)),</span>
+    <span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="mi">32</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s2">"relu"</span><span class="p">),</span>       <span class="c1"># encoder: compresses the image to 32 numbers</span>
+    <span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="mi">784</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s2">"sigmoid"</span><span class="p">),</span>   <span class="c1"># decoder: rebuilds 784 pixels (sigmoid keeps them 0-1)</span>
+<span class="p">])</span>
+
+<span class="n">m</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s2">"adam"</span><span class="p">,</span> <span class="s2">"binary_crossentropy"</span><span class="p">)</span>            <span class="c1"># optimizer = Adam, loss = how different output is from input</span>
+<span class="n">m</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">256</span><span class="p">)</span>                <span class="c1"># input = target (unsupervised); 5 passes, 256 images per step</span>
+
+<span class="n">o</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>                                     <span class="c1"># rebuild test images the model has never seen</span>
+
+<span class="c1"># Show 5 originals (top row) and their reconstructions (bottom row)</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>                         <span class="c1"># grid of 2 rows x 5 columns, position i+1</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">28</span><span class="p">,</span> <span class="mi">28</span><span class="p">),</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">"gray"</span><span class="p">)</span>    <span class="c1"># turn 784 numbers back into a 28x28 image</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">6</span><span class="p">)</span>                         <span class="c1"># same column, bottom row</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">o</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">28</span><span class="p">,</span> <span class="mi">28</span><span class="p">),</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">"gray"</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</code></pre></div>
+<p>If MNIST is given as a file (no internet), replace the <code>load_data()</code> line with: <code>import numpy as np; f = np.load("mnist.npz"); x, t = f["x_train"], f["x_test"]</code></p>
+<h2 id="p5-personal-website-with-html-css-and-gen-ai">P5 – Personal website with HTML/CSS and Gen-AI</h2>
+<h3>Concepts</h3>
+<ul>
+<li><strong>HTML (HyperText Markup Language):</strong> the markup language that defines a web page's <em>structure and content</em> using tags. Plain words: the skeleton – headings, paragraphs, images.</li>
+<li><strong>Tag / element:</strong> <code>&lt;h1&gt;Hello&lt;/h1&gt;</code> – an opening tag, content, a closing tag. Some have no closing tag (<code>&lt;img&gt;</code>). <strong>Attributes</strong> add details: <code>src</code> (image file), <code>href</code> (link target), <code>class</code> (a name CSS can target).</li>
+<li><strong>Page skeleton:</strong> <code>&lt;!DOCTYPE html&gt;</code> (tells the browser it's HTML5) → <code>&lt;html&gt;</code> → <code>&lt;head&gt;</code> (title, links to CSS, meta info – not shown on the page) + <code>&lt;body&gt;</code> (everything visible).</li>
+<li><strong>CSS (Cascading Style Sheets):</strong> rules that control <em>presentation</em> – colours, fonts, spacing, layout. Plain words: the clothes on the skeleton.</li>
+<li><strong>CSS rule:</strong> <code>selector { property: value; }</code>. Selectors: <code>h1</code> (all h1 tags), <code>.card</code> (class="card"), <code>#count</code> (id="count").</li>
+<li><strong>Three ways to add CSS:</strong> inline (<code>style="…"</code> on a tag), internal (<code>&lt;style&gt;</code> in the head), external (a <code>.css</code> file linked with <code>&lt;link&gt;</code> – the best, reusable).</li>
+<li><strong>Responsive design:</strong> the <code>viewport</code> meta tag and <code>@media</code> rules make the page fit phones too.</li>
+<li><strong>Role of Generative AI:</strong> tools like ChatGPT or Copilot turn a prompt ("make a dark portfolio with a projects section") into starter HTML/CSS. You still review and personalise it.</li>
+<li><strong>Hosting:</strong> putting files on a server so anyone can open the link. <strong>GitHub Pages</strong> serves a repo's files for free at <code>username.github.io/repo</code>; <strong>Netlify</strong> lets you drag and drop a folder.</li>
+</ul>
+<h3>Code: index.html</h3>
+<div class="code"><div class="bar"><span>HTML</span><button type="button" class="copy">Copy</button></div><pre><code><span class="cp">&lt;!DOCTYPE html&gt;</span>                                  <span class="cm">&lt;!-- tells the browser this is HTML5 --&gt;</span>
+<span class="p">&lt;</span><span class="nt">html</span><span class="p">&gt;</span>
+<span class="p">&lt;</span><span class="nt">head</span><span class="p">&gt;</span>                                           <span class="cm">&lt;!-- head = info about the page, not shown on it --&gt;</span>
+  <span class="p">&lt;</span><span class="nt">title</span><span class="p">&gt;</span>My Portfolio<span class="p">&lt;/</span><span class="nt">title</span><span class="p">&gt;</span>                    <span class="cm">&lt;!-- text on the browser tab --&gt;</span>
+  <span class="p">&lt;</span><span class="nt">link</span> <span class="na">rel</span><span class="o">=</span><span class="s">"stylesheet"</span> <span class="na">href</span><span class="o">=</span><span class="s">"style.css"</span><span class="p">&gt;</span>       <span class="cm">&lt;!-- attach the external CSS file --&gt;</span>
+<span class="p">&lt;/</span><span class="nt">head</span><span class="p">&gt;</span>
+<span class="p">&lt;</span><span class="nt">body</span><span class="p">&gt;</span>                                           <span class="cm">&lt;!-- body = everything visible on the page --&gt;</span>
+  <span class="p">&lt;</span><span class="nt">h1</span><span class="p">&gt;</span>Chinmay Kotkar<span class="p">&lt;/</span><span class="nt">h1</span><span class="p">&gt;</span>                        <span class="cm">&lt;!-- main heading --&gt;</span>
+  <span class="p">&lt;</span><span class="nt">img</span> <span class="na">src</span><span class="o">=</span><span class="s">"profile.jpg"</span> <span class="na">width</span><span class="o">=</span><span class="s">"150"</span><span class="p">&gt;</span>            <span class="cm">&lt;!-- profile photo; file must be in the same folder --&gt;</span>
+  <span class="p">&lt;</span><span class="nt">p</span><span class="p">&gt;</span>First-year B.Tech CSE student at SIT Pune.<span class="p">&lt;/</span><span class="nt">p</span><span class="p">&gt;</span>   <span class="cm">&lt;!-- paragraph: short intro --&gt;</span>
+
+  <span class="p">&lt;</span><span class="nt">h2</span><span class="p">&gt;</span>Projects<span class="p">&lt;/</span><span class="nt">h2</span><span class="p">&gt;</span>                              <span class="cm">&lt;!-- sub-heading --&gt;</span>
+  <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">"card"</span><span class="p">&gt;</span>                             <span class="cm">&lt;!-- div = a box; class lets CSS style it --&gt;</span>
+    <span class="p">&lt;</span><span class="nt">h3</span><span class="p">&gt;</span>Netra<span class="p">&lt;/</span><span class="nt">h3</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">p</span><span class="p">&gt;</span>Edge-AI retail CCTV analytics.<span class="p">&lt;/</span><span class="nt">p</span><span class="p">&gt;</span>
+  <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+  <span class="p">&lt;</span><span class="nt">div</span> <span class="na">class</span><span class="o">=</span><span class="s">"card"</span><span class="p">&gt;</span>                             <span class="cm">&lt;!-- second project (assignment needs at least 2) --&gt;</span>
+    <span class="p">&lt;</span><span class="nt">h3</span><span class="p">&gt;</span>Era of Greed<span class="p">&lt;/</span><span class="nt">h3</span><span class="p">&gt;</span>
+    <span class="p">&lt;</span><span class="nt">p</span><span class="p">&gt;</span>Investment game web app.<span class="p">&lt;/</span><span class="nt">p</span><span class="p">&gt;</span>
+  <span class="p">&lt;/</span><span class="nt">div</span><span class="p">&gt;</span>
+<span class="p">&lt;/</span><span class="nt">body</span><span class="p">&gt;</span>
+<span class="p">&lt;/</span><span class="nt">html</span><span class="p">&gt;</span>
+</code></pre></div>
+<h3>Code: style.css</h3>
+<div class="code"><div class="bar"><span>CSS</span><button type="button" class="copy">Copy</button></div><pre><code><span class="c">/* body: whole page - font, dark background, white text, everything centred */</span>
+<span class="nt">body</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">font-family</span><span class="p">:</span><span class="w"> </span><span class="n">Arial</span><span class="p">;</span><span class="w"> </span><span class="k">background</span><span class="p">:</span><span class="w"> </span><span class="mh">#0f172a</span><span class="p">;</span><span class="w"> </span><span class="k">color</span><span class="p">:</span><span class="w"> </span><span class="kc">white</span><span class="p">;</span><span class="w"> </span><span class="k">text-align</span><span class="p">:</span><span class="w"> </span><span class="kc">center</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+
+<span class="c">/* h1: main heading in light blue (#RRGGBB hex colour) */</span>
+<span class="nt">h1</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">color</span><span class="p">:</span><span class="w"> </span><span class="mh">#38bdf8</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+
+<span class="c">/* img: border-radius 50% turns the square photo into a circle */</span>
+<span class="nt">img</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">border-radius</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span><span class="kt">%</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+
+<span class="c">/* .card: the project boxes (. = class selector)</span>
+<span class="c">   padding = space inside the box, margin = space outside it, auto = centre horizontally */</span>
+<span class="p">.</span><span class="nc">card</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">background</span><span class="p">:</span><span class="w"> </span><span class="mh">#1e293b</span><span class="p">;</span><span class="w"> </span><span class="k">margin</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="kt">px</span><span class="w"> </span><span class="kc">auto</span><span class="p">;</span><span class="w"> </span><span class="k">padding</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="kt">px</span><span class="p">;</span><span class="w"> </span><span class="k">width</span><span class="p">:</span><span class="w"> </span><span class="mi">300</span><span class="kt">px</span><span class="p">;</span><span class="w"> </span><span class="k">border-radius</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="kt">px</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+</code></pre></div>
+<p>To host on GitHub Pages: New repository → upload <code>index.html</code>, <code>style.css</code>, <code>profile.jpg</code> → Settings → Pages → Branch: main → Save.</p>
+<h2 id="p6-rule-based-chatbot-with-nlp">P6 – Rule-based chatbot with NLP</h2>
+<h3>Concepts</h3>
+<ul>
+<li><strong>NLP (Natural Language Processing):</strong> the branch of AI that lets computers read, understand and generate human language. Plain words: teaching a computer to deal with normal sentences, not just commands.</li>
+<li><strong>Chatbot:</strong> a program that holds a conversation. <strong>Rule-based</strong> chatbots follow hand-written rules; <strong>AI/ML chatbots</strong> (like ChatGPT) learn from data.</li>
+<li><strong>Regular expression (regex):</strong> a pattern describing text. Plain words: a search template.<ul>
+<li><code>.</code> = any character, <code>*</code> = zero or more times, so <code>.*</code> = "anything".</li>
+<li><code>( )</code> = a <em>capture group</em>: it saves the matched part so it can be reused.</li>
+<li><code>|</code> = OR: <code>hi|hello</code> matches either.</li>
+<li><code>\b</code> = a word boundary, so <code>hi\b</code> matches "hi" but not "history".</li>
+</ul>
+</li>
+<li><strong>Pattern–response pairs:</strong> each rule is <code>[pattern, [possible replies]]</code>. The bot tries the patterns <em>in order</em> and uses the first match; if a rule has several replies, it picks one at random.</li>
+<li><strong>%1:</strong> inserts the text caught by the first <code>( )</code> group. "my name is Chinmay" with <code>my name is (.*)</code> → %1 = "chinmay" (NLTK lowercases the captured text while applying reflections).</li>
+<li><strong>Reflections:</strong> a dictionary that swaps pronouns in the captured text so the reply sounds natural: I → you, my → your, am → are. "I need my book" → "Why do you need <strong>your</strong> book?"</li>
+<li><strong>Default response:</strong> the catch-all <code>(.*)</code> matches anything, so it must be the <em>last</em> rule; otherwise it would answer everything.</li>
+<li><strong>NLTK (Natural Language Toolkit):</strong> a Python NLP library; <code>nltk.chat.util</code> provides <code>Chat</code> and <code>reflections</code>.</li>
+<li><strong>Limitations (viva):</strong> no memory of earlier messages, no real understanding, can't learn, breaks on typos or phrasing nobody wrote a rule for.</li>
+</ul>
+<h3>Code</h3>
+<div class="code"><div class="bar"><span>Python</span><button type="button" class="copy">Copy</button></div><pre><code><span class="kn">from</span><span class="w"> </span><span class="nn">nltk.chat.util</span><span class="w"> </span><span class="kn">import</span> <span class="n">Chat</span><span class="p">,</span> <span class="n">reflections</span>         <span class="c1"># Chat = rule-based bot, reflections = pronoun swaps (my -&gt; your)</span>
+
+<span class="c1"># Each rule = [regex pattern, [possible replies]]. Rules are tried top to bottom; first match wins.</span>
+<span class="c1"># (.*) = "anything", and it is captured; %1 puts the captured text into the reply.</span>
+<span class="n">pairs</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">[</span><span class="sa">r</span><span class="s2">"my name is (.*)"</span><span class="p">,</span> <span class="p">[</span><span class="s2">"Hello %1!"</span><span class="p">]],</span>                       <span class="c1"># greets the user by name</span>
+    <span class="p">[</span><span class="sa">r</span><span class="s2">"(hi|hello|hey)\b(.*)"</span><span class="p">,</span> <span class="p">[</span><span class="s2">"Hello! How can I help?"</span><span class="p">]],</span>     <span class="c1"># | = OR, \b = whole word only</span>
+    <span class="p">[</span><span class="sa">r</span><span class="s2">"(.*)your name(.*)"</span><span class="p">,</span> <span class="p">[</span><span class="s2">"I am a chatbot."</span><span class="p">]],</span>
+    <span class="p">[</span><span class="sa">r</span><span class="s2">"how are you(.*)"</span><span class="p">,</span> <span class="p">[</span><span class="s2">"I'm fine!"</span><span class="p">]],</span>
+    <span class="p">[</span><span class="sa">r</span><span class="s2">"i feel (.*)"</span><span class="p">,</span> <span class="p">[</span><span class="s2">"Why do you feel %1?"</span><span class="p">]],</span>                 <span class="c1"># reflection: "i feel my exam..." -&gt; "your exam"</span>
+    <span class="p">[</span><span class="sa">r</span><span class="s2">"i need (.*)"</span><span class="p">,</span> <span class="p">[</span><span class="s2">"Why do you need %1?"</span><span class="p">]],</span>                 <span class="c1"># reflection: "i need my book" -&gt; "your book"</span>
+    <span class="p">[</span><span class="sa">r</span><span class="s2">"(.*)nlp(.*)"</span><span class="p">,</span> <span class="p">[</span><span class="s2">"NLP helps computers understand language."</span><span class="p">]],</span>
+    <span class="p">[</span><span class="sa">r</span><span class="s2">"(.*)thank(.*)"</span><span class="p">,</span> <span class="p">[</span><span class="s2">"You're welcome!"</span><span class="p">]],</span>
+    <span class="p">[</span><span class="sa">r</span><span class="s2">"quit"</span><span class="p">,</span> <span class="p">[</span><span class="s2">"Bye!"</span><span class="p">]],</span>                                       <span class="c1"># matched before the default so "quit" says Bye</span>
+    <span class="p">[</span><span class="sa">r</span><span class="s2">"(.*)"</span><span class="p">,</span> <span class="p">[</span><span class="s2">"Sorry, I didn't understand."</span><span class="p">]],</span>                <span class="c1"># DEFAULT reply: matches anything, so it must be LAST</span>
+<span class="p">]</span>
+
+<span class="n">Chat</span><span class="p">(</span><span class="n">pairs</span><span class="p">,</span> <span class="n">reflections</span><span class="p">)</span><span class="o">.</span><span class="n">converse</span><span class="p">()</span>                  <span class="c1"># build the bot and start the chat loop; type "quit" to exit</span>
+</code></pre></div>
+<p>Example run: <code>hello</code> → Hello! How can I help? · <code>my name is Chinmay</code> → Hello chinmay! · <code>i need my book</code> → Why do you need your book? · <code>asdf</code> → Sorry, I didn't understand.</p>
+<h2 id="p8-web-scraping">P8 – Web scraping</h2>
+<h3>Concepts</h3>
+<ul>
+<li><strong>Web scraping:</strong> automatically extracting data from web pages with a program. Plain words: a script that reads a website and copies the bits you want into a table, instead of you copy-pasting by hand.</li>
+<li><strong>HTTP request:</strong> the message a browser (or script) sends to a server asking for a page. <strong>GET</strong> = "give me this page". The server replies with a <strong>status code</strong> and the page's HTML.<ul>
+<li>200 = OK, 403 = Forbidden (blocked), 404 = Not found, 500 = server error.</li>
+</ul>
+</li>
+<li><strong>requests library:</strong> sends HTTP requests from Python. <code>requests.get(url).text</code> = the page's HTML as a string.</li>
+<li><strong>User-Agent header:</strong> tells the server which browser is asking. Some sites block requests that don't look like a browser, so we send <code>Mozilla/5.0</code>.</li>
+<li><strong>Parsing:</strong> turning raw HTML text into a structure (a tree of tags) you can search. <strong>BeautifulSoup</strong> does this; <code>"html.parser"</code> is Python's built-in parser.</li>
+<li><strong>find() / find_all():</strong> <code>find_all("h2")</code> returns every <code>&lt;h2&gt;</code> tag; <code>.text</code> (or <code>.get_text()</code>) gives the words inside it. News headlines are usually in <code>&lt;h2&gt;</code> tags.</li>
+<li><strong>Storing data:</strong> a <strong>pandas DataFrame</strong> organises the results; <code>to_csv()</code> saves them as a spreadsheet file.</li>
+<li><strong>Ethics (viva):</strong> check the site's <code>robots.txt</code> and terms, don't flood it with requests, don't collect personal data. Pages built by JavaScript need a tool like Selenium, because <code>requests</code> only gets the initial HTML.</li>
+</ul>
+<h3>Code</h3>
+<div class="code"><div class="bar"><span>Python</span><button type="button" class="copy">Copy</button></div><pre><code><span class="kn">import</span><span class="w"> </span><span class="nn">requests</span><span class="o">,</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>                        <span class="c1"># requests = fetch web pages, pandas = make a table / CSV</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bs4</span><span class="w"> </span><span class="kn">import</span> <span class="n">BeautifulSoup</span>                        <span class="c1"># BeautifulSoup = parse (read) HTML</span>
+
+<span class="n">url</span> <span class="o">=</span> <span class="s2">"https://www.bbc.com/news"</span>
+<span class="n">headers</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"User-Agent"</span><span class="p">:</span> <span class="s2">"Mozilla/5.0"</span><span class="p">}</span>              <span class="c1"># pretend to be a browser so the site doesn't block us</span>
+
+<span class="n">html</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">)</span><span class="o">.</span><span class="n">text</span>       <span class="c1"># 1. REQUEST: GET the page; .text = its HTML as a string</span>
+<span class="n">s</span> <span class="o">=</span> <span class="n">BeautifulSoup</span><span class="p">(</span><span class="n">html</span><span class="p">,</span> <span class="s2">"html.parser"</span><span class="p">)</span>               <span class="c1"># 2. PARSE: turn the HTML into a searchable tree</span>
+
+<span class="c1"># 3. EXTRACT: every &lt;h2&gt; tag holds a headline; keep the text of non-empty ones, first 10 only</span>
+<span class="c1">#    (list comprehension = a for loop that builds a list in one line)</span>
+<span class="n">headlines</span> <span class="o">=</span> <span class="p">[</span><span class="n">h</span><span class="o">.</span><span class="n">text</span> <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">s</span><span class="o">.</span><span class="n">find_all</span><span class="p">(</span><span class="s2">"h2"</span><span class="p">)</span> <span class="k">if</span> <span class="n">h</span><span class="o">.</span><span class="n">text</span><span class="p">][:</span><span class="mi">10</span><span class="p">]</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">"Headline"</span><span class="p">:</span> <span class="n">headlines</span><span class="p">})</span>           <span class="c1"># 4. STORE: one-column table</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+<span class="n">df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s2">"bbc_headlines.csv"</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>          <span class="c1"># save as a CSV file</span>
+</code></pre></div>
+<p>If a saved HTML file is given instead of a URL, replace the <code>requests.get</code> line with <code>html = open("page.html", encoding="utf-8").read()</code>.</p>
+<h2 id="p9-javascript-counter-app-and-debugging">P9 – JavaScript counter app and debugging</h2>
+<h3>Concepts</h3>
+<ul>
+<li><strong>JavaScript (JS):</strong> a client-side scripting language that runs in the browser and adds logic and interactivity. Plain words: HTML is the skeleton, CSS the clothes, JS the muscles – it makes things <em>happen</em> when you click.</li>
+<li><strong>DOM (Document Object Model):</strong> the browser's tree of objects representing the page. JS reads and changes the page through it. <code>document.getElementById("count")</code> grabs the element with <code>id="count"</code>.</li>
+<li><strong>Variables:</strong> <code>let</code> = can be reassigned (the count changes); <code>const</code> = can't be reassigned (the reference to an element stays fixed). Avoid the old <code>var</code>.</li>
+<li><strong>State:</strong> the data the app remembers right now – here, the number <code>count</code>. The UI must be updated whenever state changes.</li>
+<li><strong>Event / event listener:</strong> an event is something that happens (a click, a key press). <code>addEventListener("click", fn)</code> says "when this is clicked, run fn". Plain words: a doorbell wired to an action.</li>
+<li><strong>Function:</strong> a named, reusable block of code. <code>() =&gt; { … }</code> is an <em>arrow function</em>, a short way to write one.</li>
+<li><strong>textContent:</strong> the text inside an element; setting it changes what's shown.</li>
+<li><strong>Debugging:</strong> finding and fixing errors.<ul>
+<li><strong>Syntax error:</strong> the code breaks the language's grammar and won't run at all (a missing <code>}</code>).</li>
+<li><strong>Runtime error:</strong> the code is valid but crashes while running (calling a method on <code>null</code> because the id was misspelt).</li>
+<li><strong>Logical error:</strong> no crash, but the result is wrong (<code>count + "1"</code> gives "01", "011" because "1" is text).</li>
+</ul>
+</li>
+<li><strong>Debugging tools:</strong> <code>console.log()</code> prints values; <strong>DevTools (F12) → Console</strong> shows logs and errors with line numbers; <strong>Sources tab → breakpoint</strong> (click a line number) pauses the code there so you can inspect variables and step line by line (F10).</li>
+</ul>
+<h3>Code (one file, index.html)</h3>
+<div class="code"><div class="bar"><span>HTML</span><button type="button" class="copy">Copy</button></div><pre><code><span class="p">&lt;</span><span class="nt">h1</span><span class="p">&gt;</span>Counter App<span class="p">&lt;/</span><span class="nt">h1</span><span class="p">&gt;</span>
+<span class="p">&lt;</span><span class="nt">p</span> <span class="na">id</span><span class="o">=</span><span class="s">"count"</span><span class="p">&gt;</span>0<span class="p">&lt;/</span><span class="nt">p</span><span class="p">&gt;</span>                               <span class="cm">&lt;!-- shows the number; id lets JS find it --&gt;</span>
+<span class="p">&lt;</span><span class="nt">button</span> <span class="na">id</span><span class="o">=</span><span class="s">"inc"</span><span class="p">&gt;</span>Increment<span class="p">&lt;/</span><span class="nt">button</span><span class="p">&gt;</span>
+<span class="p">&lt;</span><span class="nt">button</span> <span class="na">id</span><span class="o">=</span><span class="s">"reset"</span><span class="p">&gt;</span>Reset<span class="p">&lt;/</span><span class="nt">button</span><span class="p">&gt;</span>
+
+<span class="p">&lt;</span><span class="nt">script</span><span class="p">&gt;</span><span class="w">                                          </span><span class="c1">// JS goes AFTER the elements so they already exist</span>
+<span class="w">  </span><span class="kd">let</span><span class="w"> </span><span class="nx">count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0</span><span class="p">;</span><span class="w">                                  </span><span class="c1">// STATE: the current number (let = can change)</span>
+<span class="w">  </span><span class="kd">const</span><span class="w"> </span><span class="nx">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="s2">"count"</span><span class="p">);</span><span class="w">     </span><span class="c1">// DOM ACCESS: grab the &lt;p&gt; (const = won't be reassigned)</span>
+
+<span class="w">  </span><span class="c1">// EVENT LISTENER: when Increment is clicked, run this arrow function</span>
+<span class="w">  </span><span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="s2">"inc"</span><span class="p">).</span><span class="nx">addEventListener</span><span class="p">(</span><span class="s2">"click"</span><span class="p">,</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">"Before:"</span><span class="p">,</span><span class="w"> </span><span class="nx">count</span><span class="p">);</span><span class="w">                </span><span class="c1">// DEBUGGING: value before (see F12 -&gt; Console)</span>
+<span class="w">    </span><span class="nx">count</span><span class="o">++</span><span class="p">;</span><span class="w">                                      </span><span class="c1">// add 1 to the state</span>
+<span class="w">    </span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">"After:"</span><span class="p">,</span><span class="w"> </span><span class="nx">count</span><span class="p">);</span><span class="w">                 </span><span class="c1">// value after</span>
+<span class="w">    </span><span class="nx">c</span><span class="p">.</span><span class="nx">textContent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">count</span><span class="p">;</span><span class="w">                        </span><span class="c1">// UPDATE the page to show the new number</span>
+<span class="w">  </span><span class="p">});</span>
+
+<span class="w">  </span><span class="c1">// EVENT LISTENER: when Reset is clicked, go back to 0</span>
+<span class="w">  </span><span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="s2">"reset"</span><span class="p">).</span><span class="nx">addEventListener</span><span class="p">(</span><span class="s2">"click"</span><span class="p">,</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">"Reset"</span><span class="p">);</span>
+<span class="w">    </span><span class="nx">count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0</span><span class="p">;</span>
+<span class="w">    </span><span class="nx">c</span><span class="p">.</span><span class="nx">textContent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">count</span><span class="p">;</span>
+<span class="w">  </span><span class="p">});</span>
+<span class="p">&lt;/</span><span class="nt">script</span><span class="p">&gt;</span>
+</code></pre></div>
+<p>Open the file in a browser, press F12 → Console, click the buttons, and screenshot both the page and the logs. (Inside <code>&lt;script&gt;</code>, comments use <code>//</code>; in HTML they use <code>&lt;!-- --&gt;</code>.)</p>
+<h2 id="p10a-speech-to-text-with-the-google-speech-api">P10a – Speech-to-text with the Google Speech API</h2>
+<h3>Concepts</h3>
+<ul>
+<li><strong>Speech-to-text (STT) / Automatic Speech Recognition (ASR):</strong> converting spoken audio into written text. Plain words: automatic typing of what someone says, like YouTube auto-captions.</li>
+<li><strong>How it works:</strong><ol>
+<li><strong>Audio input</strong> – a recording (WAV, FLAC) or live microphone.</li>
+<li><strong>Preprocessing</strong> – noise reduction, then <strong>feature extraction</strong>: turning sound waves into numbers that describe them (e.g. MFCCs, a fingerprint of the sound in short time slices).</li>
+<li><strong>Model</strong> – a deep neural network trained on huge amounts of speech maps those features to words.</li>
+<li><strong>Output</strong> – the transcribed text.</li>
+</ol>
+</li>
+<li><strong>API (Application Programming Interface):</strong> a ready-made service your code can call. Plain words: a counter where you hand in a request and get a result back, without knowing what happens in the kitchen.</li>
+<li><strong>Google Web Speech API:</strong> Google's free cloud speech service. The audio is <em>sent over the internet</em> to Google, so internet is required.</li>
+<li><strong>SpeechRecognition library:</strong> a Python wrapper that handles loading audio and calling several engines; <code>recognize_google()</code> uses Google's.</li>
+<li><strong>Audio formats:</strong> WAV is uncompressed and FLAC is lossless, so the library reads them reliably. MP3 must be converted first.</li>
+<li><strong>Exceptions:</strong> errors your code can catch with <code>try/except</code> instead of crashing.<ul>
+<li><code>UnknownValueError</code> – the audio was unclear, silent or too noisy.</li>
+<li><code>RequestError</code> – no internet or the service failed.</li>
+</ul>
+</li>
+<li><strong>Applications:</strong> voice assistants (Alexa, Google Assistant), automatic captions, meeting transcription, accessibility for people with hearing or motor impairments.</li>
+</ul>
+<h3>Code</h3>
+<div class="code"><div class="bar"><span>Python</span><button type="button" class="copy">Copy</button></div><pre><code><span class="kn">import</span><span class="w"> </span><span class="nn">speech_recognition</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sr</span>                      <span class="c1"># SpeechRecognition library (talks to Google's API)</span>
+
+<span class="n">r</span> <span class="o">=</span> <span class="n">sr</span><span class="o">.</span><span class="n">Recognizer</span><span class="p">()</span>                                  <span class="c1"># the object that does the recognition</span>
+
+<span class="k">with</span> <span class="n">sr</span><span class="o">.</span><span class="n">AudioFile</span><span class="p">(</span><span class="s2">"Conference.wav"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>            <span class="c1"># open the WAV file (closed automatically after the block)</span>
+    <span class="n">audio</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">record</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>                              <span class="c1"># read the whole file into 'audio'</span>
+
+<span class="k">try</span><span class="p">:</span>                                                 <span class="c1"># try: things that might fail go here</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">recognize_google</span><span class="p">(</span><span class="n">audio</span><span class="p">))</span>                 <span class="c1"># send audio to Google over the internet, print the text</span>
+<span class="k">except</span> <span class="n">sr</span><span class="o">.</span><span class="n">UnknownValueError</span><span class="p">:</span>                         <span class="c1"># Google got the audio but couldn't make out any words</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"Could not understand audio"</span><span class="p">)</span>
+<span class="k">except</span> <span class="n">sr</span><span class="o">.</span><span class="n">RequestError</span><span class="p">:</span>                              <span class="c1"># no internet, or Google's service failed</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"API/Internet error"</span><span class="p">)</span>
+</code></pre></div>
+<p>Optional: <code>r.recognize_google(audio, language="en-IN")</code> for Indian English.</p>
+<h2 id="p10b-tweet-sentiment-analysis-with-vader">P10b – Tweet sentiment analysis with VADER</h2>
+<h3>Concepts</h3>
+<ul>
+<li><strong>Sentiment analysis:</strong> an NLP technique that decides whether text expresses positive, negative or neutral emotion. Plain words: a mood detector for sentences – used on reviews, tweets and feedback.</li>
+<li><strong>Lexicon:</strong> a dictionary of words with sentiment scores ("amazing" strongly positive, "terrible" strongly negative).</li>
+<li><strong>VADER (Valence Aware Dictionary and sEntiment Reasoner):</strong> a pre-trained, lexicon- and rule-based analyser built for social media. It needs no training data. Its rules handle:<ul>
+<li>negation ("not good" becomes negative),</li>
+<li>intensifiers ("very good" &gt; "good"),</li>
+<li>CAPS and "!!!" for emphasis, plus slang and emojis.</li>
+</ul>
+</li>
+<li><strong>polarity_scores() output:</strong> <code>pos</code>, <code>neg</code>, <code>neu</code> = proportions of the text that are positive, negative, neutral (they add up to 1); <code>compound</code> = one overall score normalised from −1 (most negative) to +1 (most positive).</li>
+<li><strong>Classification thresholds:</strong> compound ≥ +0.05 → positive; ≤ −0.05 → negative; in between → neutral.</li>
+<li><strong>Preprocessing / cleaning:</strong> removing noise before analysis – URLs, @mentions, symbols – using <strong>regex</strong>: <code>re.sub(pattern, replacement, text)</code> replaces every match.</li>
+<li><strong>Lambda:</strong> a tiny one-line nameless function. <code>lambda c: c * 2</code> = "take c, return c × 2". <strong>apply()</strong> runs a function on every value of a column.</li>
+<li><strong>Accuracy:</strong> correct predictions ÷ total × 100, possible only if the CSV has true labels.</li>
+<li><strong>Viva point:</strong> cleaning removes emojis, "!" and CAPS, which VADER could have used. Sarcasm ("great, another Monday") also fools it.</li>
+</ul>
+<h3>Code</h3>
+<div class="code"><div class="bar"><span>Python</span><button type="button" class="copy">Copy</button></div><pre><code><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span><span class="o">,</span><span class="w"> </span><span class="nn">re</span>                               <span class="c1"># pandas = table, re = regular expressions (text patterns)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">nltk.sentiment</span><span class="w"> </span><span class="kn">import</span> <span class="n">SentimentIntensityAnalyzer</span> <span class="c1"># VADER</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">"tweets.csv"</span><span class="p">)</span>                       <span class="c1"># load tweets (if the header is on row 2: header=1)</span>
+<span class="n">sia</span> <span class="o">=</span> <span class="n">SentimentIntensityAnalyzer</span><span class="p">()</span>                   <span class="c1"># create VADER (loads its word list)</span>
+
+<span class="c1"># CLEAN each tweet: remove links (http...), mentions (@name) and anything that isn't a letter/space; then lowercase</span>
+<span class="c1"># lambda t: ... = a tiny one-line function; apply() runs it on every row of the column</span>
+<span class="n">df</span><span class="p">[</span><span class="s2">"clean"</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">"tweetText"</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">t</span><span class="p">:</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">"http\S+|@\w+|[^a-zA-Z\s]"</span><span class="p">,</span> <span class="s2">""</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">t</span><span class="p">))</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>
+
+<span class="c1"># SCORE: polarity_scores gives {neg, neu, pos, compound}; keep compound (-1 to +1)</span>
+<span class="n">df</span><span class="p">[</span><span class="s2">"compound"</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">"clean"</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">t</span><span class="p">:</span> <span class="n">sia</span><span class="o">.</span><span class="n">polarity_scores</span><span class="p">(</span><span class="n">t</span><span class="p">)[</span><span class="s2">"compound"</span><span class="p">])</span>
+
+<span class="c1"># LABEL: &gt;= 0.05 positive, &lt;= -0.05 negative, otherwise neutral</span>
+<span class="n">df</span><span class="p">[</span><span class="s2">"sentiment"</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">"compound"</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">c</span><span class="p">:</span> <span class="s2">"positive"</span> <span class="k">if</span> <span class="n">c</span> <span class="o">&gt;=</span> <span class="mf">0.05</span> <span class="k">else</span> <span class="s2">"negative"</span> <span class="k">if</span> <span class="n">c</span> <span class="o">&lt;=</span> <span class="o">-</span><span class="mf">0.05</span> <span class="k">else</span> <span class="s2">"neutral"</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">df</span><span class="p">[[</span><span class="s2">"tweetText"</span><span class="p">,</span> <span class="s2">"compound"</span><span class="p">,</span> <span class="s2">"sentiment"</span><span class="p">]])</span>   <span class="c1"># show results</span>
+<span class="n">df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s2">"tweets_with_sentiment.csv"</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="c1"># save results to a new CSV</span>
+
+<span class="c1"># ACCURACY (only if the file has a 'label' column): lower() so "Positive" matches "positive"; mean() of True/False = fraction correct</span>
+<span class="k">if</span> <span class="s2">"label"</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"Accuracy:"</span><span class="p">,</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s2">"label"</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="n">df</span><span class="p">[</span><span class="s2">"sentiment"</span><span class="p">])</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">*</span> <span class="mi">100</span><span class="p">,</span> <span class="s2">"%"</span><span class="p">)</span>
+</code></pre></div>
+<p>If <code>tweetText</code> gives a KeyError, run <code>print(df.columns)</code> and use the column name it shows.</p>
+<h2 id="github-study-assignment">GitHub study assignment</h2>
+<h3>Concepts</h3>
+<ul>
+<li><strong>Version control system (VCS):</strong> software that records every change to files over time so you can see history and return to any earlier version. Plain words: unlimited "undo" plus a diary of who changed what.</li>
+<li><strong>Git:</strong> a free, <em>distributed</em> VCS that runs on your own computer. <strong>GitHub:</strong> a website that hosts Git repositories online and adds collaboration tools (pull requests, issues, Pages).</li>
+<li><strong>Repository (repo):</strong> a project's folder plus its entire change history.</li>
+<li><strong>Commit:</strong> a saved snapshot of changes, with an author, a timestamp, a unique ID (hash) and a message.</li>
+<li><strong>Branch:</strong> a separate line of work split off from <code>main</code>. <strong>Merge:</strong> joining a branch back. <strong>Pull request (PR):</strong> a request on GitHub to merge a branch, so others can review first.</li>
+<li><strong>Clone / push / pull:</strong> copy a repo to your laptop / upload your commits / download others' new commits.</li>
+</ul>
+<h3>Answers (3–4 sentences each)</h3>
+<p><strong>Q1. What is GitHub, and how is it different from Git?</strong> Git is a free, open-source distributed version control system that runs on your own computer and tracks changes through commits and branches. GitHub is a cloud platform built on top of Git that hosts repositories online. It adds collaboration features such as pull requests, issues, code review and GitHub Pages. In short, Git is the tool, and GitHub is a service that hosts Git repositories so teams can work together.</p>
+<p><strong>Q2. Define repository. What are public and private repositories?</strong> A repository is a storage location for a project that holds all its files, folders and the full history of changes. A public repository can be viewed and cloned by anyone on the internet, though only collaborators can push changes. A private repository is visible only to its owner and invited collaborators. Public repos suit open-source work and portfolios; private ones suit personal, academic or company code.</p>
+<p><strong>Q3. What is a commit? Explain its purpose.</strong> A commit is a snapshot of changes made to a repository at a point in time. Each commit records the changes, the author, a timestamp, a unique ID and a message describing what changed. Commits build the project's history, so you can see who changed what and when. If something breaks, you can compare versions or go back to an earlier commit.</p>
+<p><strong>Q4. What is a branch and why is it used?</strong> A branch is an independent line of development split off from the main code. It lets you build a feature, fix a bug or experiment without affecting the stable <code>main</code> branch. Several people can work on different branches at the same time. When the work is ready, the branch is merged back, usually through a reviewed pull request.</p>
+<h3>Commands (if asked)</h3>
+<div class="code"><div class="bar"><span>Terminal</span><button type="button" class="copy">Copy</button></div><pre><code>git<span class="w"> </span>clone<span class="w"> </span>&lt;repo-url&gt;<span class="w">        </span><span class="c1"># copy a repo to your computer</span>
+git<span class="w"> </span>status<span class="w">                  </span><span class="c1"># see what changed</span>
+git<span class="w"> </span>add<span class="w"> </span>.<span class="w">                   </span><span class="c1"># stage all changes</span>
+git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">"message"</span><span class="w">     </span><span class="c1"># save a snapshot</span>
+git<span class="w"> </span>push<span class="w">                    </span><span class="c1"># upload commits to GitHub</span>
+git<span class="w"> </span>checkout<span class="w"> </span>-b<span class="w"> </span>feature-1<span class="w">   </span><span class="c1"># create and switch to a new branch</span>
+git<span class="w"> </span>merge<span class="w"> </span>feature-1<span class="w">         </span><span class="c1"># merge it into the current branch</span>
+git<span class="w"> </span>pull<span class="w">                    </span><span class="c1"># download the latest changes</span>
+git<span class="w"> </span>log<span class="w"> </span>--oneline<span class="w">           </span><span class="c1"># view commit history</span>
+</code></pre></div>
+</main>
+<script>
+{
+  for (const t of document.querySelectorAll("main table")) {
+    const w = document.createElement("div"); w.className = "tbl";
+    t.parentNode.insertBefore(w, t); w.appendChild(t);
+  }
+  for (const b of document.querySelectorAll(".copy")) {
+    b.addEventListener("click", async () => {
+      const code = b.closest(".code").querySelector("pre").innerText;
+      try { await navigator.clipboard.writeText(code); b.textContent = "Copied"; }
+      catch (e) { b.textContent = "Select & copy"; }
+      setTimeout(() => (b.textContent = "Copy"), 1500);
+    });
+  }
+}
+</script>
+</body>
+</html>
